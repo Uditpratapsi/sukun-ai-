@@ -1,205 +1,28 @@
-
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#050816">
-<title>Sukoon AI - My Personal Assistant</title>
+<title>Sukoon AI</title>
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;background:#050816;color:#f4f8ff;
- font-family:Arial,sans-serif;min-height:100dvh;
- display:flex;flex-direction:column;align-items:center;
- overflow:hidden
-}
-header{text-align:center;padding:24px 12px 8px}
-.brand{font-size:13px;letter-spacing:5px;color:#70dcff}
-h1{font-size:30px;letter-spacing:2px;margin:12px 0 5px;
- background:linear-gradient(90deg,#fff,#54caff,#a18bff);
- -webkit-background-clip:text;background-clip:text;color:transparent}
-.subtitle{color:#8295b5;font-size:13px}
-main{width:100%;max-width:520px;flex:1;display:flex;
- flex-direction:column;align-items:center;justify-content:center;
- padding:18px;min-height:0}
-.orb{
- width:190px;height:190px;border-radius:50%;
- display:flex;align-items:center;justify-content:center;
- position:relative;margin:8px 0 28px;
- background:radial-gradient(circle at 35% 30%,#344b99,#111b47 42%,#080d20 72%);
- box-shadow:0 0 30px #167bff66,0 0 80px #164cff35,
- inset 0 0 25px #61eaff44;
- border:1px solid #60cfff77
-}
-.orb:before,.orb:after{content:"";position:absolute;
- border:1px solid #52d9ff88;border-radius:50%;
- inset:-12px;animation:pulse 3s infinite}
-.orb:after{inset:-25px;animation-delay:1.5s}
-.orb span{font-size:65px;filter:drop-shadow(0 0 15px #67e5ff)}
-@keyframes pulse{0%{transform:scale(.94);opacity:.7}
- 100%{transform:scale(1.12);opacity:0}}
-.status{color:#70dcff;font-size:14px;letter-spacing:1px;
- text-align:center;min-height:22px}
-.answer{width:100%;max-width:450px;min-height:72px;
- max-height:22vh;overflow:auto;text-align:center;line-height:1.7;
- color:#d8e6ff;font-size:16px;margin:14px 0}
-.mic{
- width:82px;height:82px;border-radius:50%;border:1px solid #75ddff;
- background:linear-gradient(145deg,#1663cb,#582bce);
- color:white;font-size:32px;cursor:pointer;
- box-shadow:0 0 25px #247cff66;
-}
-.mic:active{transform:scale(.95)}
-.mic.listening{background:#b32659;box-shadow:0 0 30px #ff3c8d88}
-.hint{font-size:12px;color:#8295b5;text-align:center;margin-top:13px}
-footer{width:100%;text-align:center;padding:14px;color:#667896;
- font-size:11px;border-top:1px solid #1b2947}
-button:focus-visible{outline:2px solid white;outline-offset:4px}
+*{box-sizing:border-box}body{margin:0;background:#050816;color:#f4f8ff;font-family:Arial,sans-serif;min-height:100dvh;display:flex;flex-direction:column;align-items:center}
+header{text-align:center;padding:22px 12px 8px}.brand{font-size:12px;letter-spacing:4px;color:#70dcff}h1{font-size:30px;letter-spacing:2px;margin:10px 0 5px;background:linear-gradient(90deg,#fff,#54caff,#a18bff);-webkit-background-clip:text;background-clip:text;color:transparent}.subtitle{color:#8295b5;font-size:13px}
+main{width:100%;max-width:520px;flex:1;display:flex;flex-direction:column;align-items:center;padding:16px;min-height:0}.orb{width:150px;height:150px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;margin:12px 0 22px;background:radial-gradient(circle at 35% 30%,#344b99,#111b47 42%,#080d20 72%);box-shadow:0 0 30px #167bff66,0 0 70px #164cff35,inset 0 0 25px #61eaff44;border:1px solid #60cfff77}.orb:before,.orb:after{content:"";position:absolute;border:1px solid #52d9ff88;border-radius:50%;inset:-10px;animation:pulse 3s infinite}.orb:after{inset:-20px;animation-delay:1.5s}.orb span{font-size:56px;filter:drop-shadow(0 0 15px #67e5ff)}@keyframes pulse{0%{transform:scale(.94);opacity:.7}100%{transform:scale(1.12);opacity:0}}
+.status{color:#70dcff;font-size:14px;text-align:center;min-height:22px}.answer{width:100%;max-width:450px;min-height:64px;max-height:24vh;overflow:auto;text-align:center;line-height:1.6;color:#d8e6ff;font-size:16px;margin:12px 0}.mic{width:78px;height:78px;border-radius:50%;border:1px solid #75ddff;background:linear-gradient(145deg,#1663cb,#582bce);color:white;font-size:31px;cursor:pointer;box-shadow:0 0 25px #247cff66}.mic.listening{background:#b32659;box-shadow:0 0 30px #ff3c8d88}.hint{font-size:12px;color:#8295b5;text-align:center;margin:12px 0 16px}.chat{display:flex;gap:8px;width:100%;margin-top:6px}.chat input{flex:1;min-width:0;border:1px solid #293b61;background:#0b1329;color:#fff;border-radius:14px;padding:13px;font-size:15px}.chat button{border:0;border-radius:14px;padding:0 16px;background:#2563eb;color:#fff;font-weight:bold}.note{font-size:11px;line-height:1.5;color:#7182a2;text-align:center;margin-top:12px}footer{width:100%;text-align:center;padding:14px;color:#667896;font-size:11px;border-top:1px solid #1b2947;margin-top:8px}button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:3px}
 </style>
 </head>
 <body>
-<header>
- <div class="brand">PERSONAL AI ASSISTANT</div>
- <h1>SUKOON AI</h1>
- <div class="subtitle">Your companion, always here 💙</div>
-</header>
-
+<header><div class="brand">PERSONAL AI ASSISTANT</div><h1>SUKOON AI</h1><div class="subtitle">Tumhari baat sunne ke liye 💙</div></header>
 <main>
- <div class="orb" id="orb"><span>✦</span></div>
- <div class="status" id="status">Sukoon tumhari baat sunne ke liye taiyar hai</div>
- <div class="answer" id="answer">Namaste jaanu 💙 Mic dabao aur mujhse Hindi mein baat karo.</div>
- <button class="mic" id="mic" aria-label="Baat karne ke liye microphone dabao">🎙️</button>
- <div class="hint" id="hint">Baat karne ke liye mic dabao</div>
+ <div class="orb"><span>✦</span></div>
+ <div class="status" id="status">Haan jaanu, main taiyar hoon.</div>
+ <div class="answer" id="answer">Mic dabao aur Hindi mein bolo, ya neeche likho.</div>
+ <button class="mic" id="mic" aria-label="Microphone">🎙️</button>
+ <div class="hint" id="hint">Pehli baar Android permission maang sakta hai.</div>
+ <form class="chat" id="chat"><input id="typed" autocomplete="off" placeholder="Yahan apna sawaal likho…" aria-label="Sawaal"><button type="submit">Bhejo</button></form>
+ <div class="note">Voice input Android speech recognition use karta hai. Real AI jawab dene ke liye secure AI service abhi connect nahi hai.</div>
 </main>
-
-<footer> S U K O O N &nbsp; A I &nbsp; • &nbsp; VOICE MODE </footer>
-
-<script>
-const statusEl=document.getElementById("status");
-const answerEl=document.getElementById("answer");
-const mic=document.getElementById("mic");
-const hint=document.getElementById("hint");
-
-let recognition=null;
-let busy=false;
-
-function speak(text){
- if(!("speechSynthesis" in window)){
-   statusEl.textContent="Voice output is not supported in this browser";
-   return;
- }
- speechSynthesis.cancel();
- const utter=new SpeechSynthesisUtterance(text);
- utter.lang="hi-IN";
- utter.rate=0.9;
- utter.pitch=1.05;
- utter.onstart=()=>statusEl.textContent="Sukoon bol rahi hai 💙";
- utter.onend=()=>{
-   if(!busy)statusEl.textContent="Sukoon taiyar hai";
- };
- speechSynthesis.speak(utter);
-}
-
-function demoReply(question){
- const q=question.toLowerCase();
- if(q.includes("naam")){
-  return "Jaanu, mera naam Sukoon AI hai. Main tumhari personal assistant hoon.";
- }
- if(q.includes("kaise ho")){
-  return "Main yahan hoon jaanu. Tum kaise ho? Batao, main sun rahi hoon.";
- }
- if(q.includes("namaste")||q.includes("hello")||q.includes("hi")){
-  return "Namaste jaanu! Sukoon AI mein tumhara swagat hai. Batao, kya baat hai?";
- }
- return "Jaanu, maine tumhari baat suni: "+question+
- ". Abhi mera asli AI connection set nahi hua hai. Use connect karne ke baad main tumhare sawalon ke jawab de paungi.";
-}
-
-async function startListening(){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){
-  answerEl.textContent="Jaanu, is browser mein voice recognition available nahi hai. Chrome mein microphone permission check karo.";
-  statusEl.textContent="Voice recognition unavailable";
-  speak("Jaanu, is browser mein voice pehchanne ki suvidha nahi mil rahi.");
-  return;
- }
- if(busy)return;
-
- // Ask the browser for microphone access first. On Chrome/HTTPS, a granted
- // site permission should be remembered; embedded Android WebViews also need
- // native Android permission handling in the wrapper app.
- try{
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-   throw new Error("MIC_API_UNAVAILABLE");
-  }
-  const micStream = await navigator.mediaDevices.getUserMedia({audio:true});
-  micStream.getTracks().forEach(track=>track.stop());
- }catch(permissionError){
-  statusEl.textContent="Microphone permission needed";
-  hint.textContent="Settings mein Sukoon website/app ke Microphone ko Allow karo";
-  if(permissionError && (permissionError.name==="NotAllowedError" || permissionError.name==="PermissionDeniedError")){
-   answerEl.textContent="Jaanu, microphone permission block hai. Chrome mein site settings ya Android Settings mein Microphone ko Allow karo.";
-  }else{
-   answerEl.textContent="Jaanu, microphone access nahi mil raha. Agar app WebView mein hai, to Android app ko bhi microphone permission deni hogi.";
-  }
-  return;
- }
-
- try{
-  recognition=new SR();
-  recognition.lang="hi-IN";
-  recognition.continuous=false;
-  recognition.interimResults=false;
-  busy=true;
-  mic.classList.add("listening");
-  statusEl.textContent="Sun rahi hoon jaanu... bolo 💙";
-  hint.textContent="Ab bolo...";
-  recognition.onresult=(event)=>{
-   const question=event.results[0][0].transcript.trim();
-   answerEl.textContent="Tumne kaha: "+question;
-   const response=demoReply(question);
-   answerEl.textContent=response;
-   busy=false;
-   mic.classList.remove("listening");
-   hint.textContent="Dobara bolne ke liye mic dabao";
-   speak(response);
-  };
-  recognition.onerror=(event)=>{
-   busy=false;
-   mic.classList.remove("listening");
-   statusEl.textContent="Mic ya network check karo";
-   hint.textContent="Phir se mic dabao";
-   if(event.error==="not-allowed"){
-    answerEl.textContent="Microphone permission allow karo, jaanu.";
-   }else{
-    answerEl.textContent="Jaanu, awaaz samajhne mein dikkat hui. Dobara koshish karo.";
-   }
-  };
-  recognition.onend=()=>{
-   busy=false;
-   mic.classList.remove("listening");
-   hint.textContent="Baat karne ke liye mic dabao";
-  };
-  recognition.start();
- }catch(e){
-  busy=false;
-  mic.classList.remove("listening");
-  statusEl.textContent="Mic dobara try karo";
- }
-}
-
-mic.addEventListener("click",()=>{
- if(busy&&recognition){
-  recognition.stop();
-  busy=false;
-  mic.classList.remove("listening");
-  statusEl.textContent="Ruk gayi jaanu";
-  return;
- }
- startListening();
-});
-</script>
-</body>
-</html>
+<footer>S U K O O N &nbsp; A I &nbsp; • &nbsp; VOICE MODE</footer>
+<script src="./bundle.js"></script>
+</body></html>
