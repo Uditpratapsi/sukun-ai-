@@ -117,7 +117,7 @@ function demoReply(question){
  ". Abhi mera asli AI connection set nahi hua hai. Use connect karne ke baad main tumhare sawalon ke jawab de paungi.";
 }
 
-function startListening(){
+async function startListening(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR){
   answerEl.textContent="Jaanu, is browser mein voice recognition available nahi hai. Chrome mein microphone permission check karo.";
@@ -126,6 +126,26 @@ function startListening(){
   return;
  }
  if(busy)return;
+
+ // Ask the browser for microphone access first. On Chrome/HTTPS, a granted
+ // site permission should be remembered; embedded Android WebViews also need
+ // native Android permission handling in the wrapper app.
+ try{
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+   throw new Error("MIC_API_UNAVAILABLE");
+  }
+  const micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  micStream.getTracks().forEach(track=>track.stop());
+ }catch(permissionError){
+  statusEl.textContent="Microphone permission needed";
+  hint.textContent="Settings mein Sukoon website/app ke Microphone ko Allow karo";
+  if(permissionError && (permissionError.name==="NotAllowedError" || permissionError.name==="PermissionDeniedError")){
+   answerEl.textContent="Jaanu, microphone permission block hai. Chrome mein site settings ya Android Settings mein Microphone ko Allow karo.";
+  }else{
+   answerEl.textContent="Jaanu, microphone access nahi mil raha. Agar app WebView mein hai, to Android app ko bhi microphone permission deni hogi.";
+  }
+  return;
+ }
 
  try{
   recognition=new SR();
