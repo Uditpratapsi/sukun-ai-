@@ -1,4 +1,3 @@
-
 name: Build Sukoon AI APK
 
 on:
@@ -6,6 +5,7 @@ on:
   push:
     paths:
       - 'index.html'
+      - 'app.js'
       - '.github/workflows/build.yml'
 
 permissions:
@@ -14,28 +14,23 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Get project
         uses: actions/checkout@v4
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-
       - name: Prepare Sukoon AI
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/android
-          npm install --save-dev @capacitor/cli
+          npm install @capacitor/core@^7 @capacitor/android@^7 @capacitor-community/speech-recognition@7
+          npm install --save-dev @capacitor/cli@^7 esbuild
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.sukoonai.assistant",
@@ -45,16 +40,15 @@ jobs:
           EOF
           mkdir -p www
           cp index.html www/index.html
+          npx esbuild app.js --bundle --format=iife --outfile=www/bundle.js
           npx cap add android
           sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />' android/app/src/main/AndroidManifest.xml
           npx cap sync android
-
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
-
       - name: Save APK
         uses: actions/upload-artifact@v4
         with:
