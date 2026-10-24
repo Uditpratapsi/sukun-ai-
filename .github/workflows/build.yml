@@ -6,6 +6,7 @@ on:
     paths:
       - 'index.html'
       - 'app.js'
+      - 'web.js'
       - '.github/workflows/build.yml'
 
 permissions:
