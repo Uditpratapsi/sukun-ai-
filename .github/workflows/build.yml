@@ -34,7 +34,7 @@ jobs:
           npm install --save-dev @capacitor/cli@^7 esbuild
           cat > capacitor.config.json <<'EOF'
           {
-            "appId": "com.sukoonai.assistant",
+            "appId": "com.uditpratapsi.sukoonai",
             "appName": "Sukoon AI",
             "webDir": "www"
           }
@@ -43,15 +43,25 @@ jobs:
           cp index.html www/index.html
           npx esbuild app.js --bundle --format=iife --outfile=www/bundle.js
           npx cap add android
-          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />' android/app/src/main/AndroidManifest.xml
+          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
           npx cap sync android
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew --no-daemon clean assembleDebug
+          test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify APK
+        run: |
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          test -x "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$APK"
+          sha256sum "$APK"
+          unzip -t "$APK"
       - name: Save APK
         uses: actions/upload-artifact@v4
         with:
           name: Sukoon-AI-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
