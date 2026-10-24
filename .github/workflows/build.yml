@@ -46,6 +46,7 @@ jobs:
           mkdir -p www
           cp index.html www/index.html
           npx cap add android
+          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />' android/app/src/main/AndroidManifest.xml
           npx cap sync android
 
       - name: Build APK
