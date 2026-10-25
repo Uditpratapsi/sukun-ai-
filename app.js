@@ -111,7 +111,7 @@ async function askGemini(question) {
             }]
           },
           contents: history.slice(-MAX_HISTORY),
-          generationConfig: { temperature: 0.7, maxOutputTokens: 700 }
+          generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
         })
       }
     );
