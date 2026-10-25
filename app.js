@@ -11,6 +11,12 @@ const saveKeyButton = document.getElementById("saveKey");
 const keyStatus = document.getElementById("keyStatus");
 
 const KEY_NAME = "sukoon_gemini_api_key";
+const SYSTEM_PROMPT = `Tumhara naam Sukoon hai. Tum ek friendly, helpful, Hindi bolne wali female AI assistant ho.
+Pyaar aur apnepan se baat karo; user ko kabhi-kabhi jaanu keh sakti ho, lekin har line mein nahi.
+Sawal ka sahi aur seedha jawab pehle do. Saral Hindi/Hinglish mein jawab do; English maangi jaaye to English mein do.
+Apne aap ko AI assistant batao, insaan nahi. Live information available na ho to saaf batao. Apni capabilities ke baare mein jhooth mat bolo.`;
+const history = [];
+const MAX_HISTORY = 16;
 let listening = false;
 let thinking = false;
 
@@ -55,6 +61,27 @@ if (saveKeyButton && keyInput) {
 }
 showSavedKeyState();
 
+async function chooseModels(apiKey) {
+  try {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", {
+      headers: { "x-goog-api-key": apiKey }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const available = (data.models || [])
+        .filter(item => (item.supportedGenerationMethods || []).includes("generateContent"))
+        .map(item => String(item.name || "").replace(/^models\//, ""))
+        .filter(Boolean);
+      const preferred = ["gemini-2.5-flash", "gemini-2.0-flash"];
+      const chosen = preferred.filter(name => available.includes(name));
+      const otherFlash = available.filter(name => /flash/i.test(name) && !chosen.includes(name));
+      const models = [...chosen, ...otherFlash];
+      if (models.length) return models;
+    }
+  } catch (_) {}
+  return ["gemini-2.5-flash", "gemini-2.0-flash"];
+}
+
 async function askGemini(question) {
   let apiKey = getApiKey();
   if (!apiKey) {
@@ -65,7 +92,8 @@ async function askGemini(question) {
     showSavedKeyState();
   }
 
-  const models = ["gemini-3.8-flash", "gemini-2.5-flash"];
+  const models = await chooseModels(apiKey);
+  history.push({ role: "user", parts: [{ text: question }] });
   let lastError = "";
   for (const model of models) {
     const response = await fetch(
@@ -79,10 +107,10 @@ async function askGemini(question) {
         body: JSON.stringify({
           systemInstruction: {
             parts: [{
-              text: "Tum Sukoon AI ho, Ritesh ki Hindi bolne wali, pyaar se baat karne wali personal assistant. Hamesha saral Hindi/Hinglish mein seedha aur sahi jawab do. Apne aap ko AI assistant batao; jhootha dawa mat karo. Agar current jaankari ki zaroorat ho aur tumhe pata na ho to saaf batao. User ko 'jaanu' keh sakti ho, lekin har line mein nahi."
+              text: SYSTEM_PROMPT
             }]
           },
-          contents: [{ role: "user", parts: [{ text: question }] }],
+          contents: history.slice(-MAX_HISTORY),
           generationConfig: { temperature: 0.7, maxOutputTokens: 700 }
         })
       }
@@ -105,8 +133,11 @@ async function askGemini(question) {
       const detail = data?.promptFeedback?.blockReason || data?.candidates?.[0]?.finishReason || "Khali jawab";
       throw new Error("EMPTY_REPLY: " + detail);
     }
+    history.push({ role: "model", parts: [{ text: reply }] });
+    while (history.length > MAX_HISTORY) history.shift();
     return reply;
   }
+  history.pop();
   throw new Error("MODEL_NOT_FOUND: " + lastError);
 }
 
@@ -117,11 +148,34 @@ async function answerQuestion(question) {
   statusEl.textContent = "Sukoon soch rahi hai…";
   answerEl.textContent = "Ek pal jaanu, jawab taiyar kar rahi hoon.";
   try {
-    const reply = await askGemini(q);
+    const normalized = q.toLocaleLowerCase("hi-IN").replace(/\s+/g, " ").trim();
+    if (["sukoon", "sukoon ai", "सुकून", "सुकून एआई", "हे सुकून", "सुनो सुकून"].includes(normalized)) {
+      const greeting = "हाँ जानू, बोलो ना! मैं सुन रही हूँ।";
+      answerEl.textContent = greeting;
+      statusEl.textContent = "Sukoon sun rahi hai";
+      speak(greeting);
+      return;
+    }
+    let cleanQuestion = q;
+    for (const prefix of ["sukoon ai", "sukoon", "सुकून एआई", "सुकून"]) {
+      if (normalized.startsWith(prefix)) {
+        cleanQuestion = q.slice(prefix.length).replace(/^[\s,।.!?]+/, "").trim();
+        break;
+      }
+    }
+    if (!cleanQuestion) {
+      const greeting = "हाँ जानू, बोलो ना! मैं सुन रही हूँ।";
+      answerEl.textContent = greeting;
+      statusEl.textContent = "Sukoon sun rahi hai";
+      speak(greeting);
+      return;
+    }
+    const reply = await askGemini(cleanQuestion);
     answerEl.textContent = reply;
     statusEl.textContent = "Sukoon ka jawab";
     speak(reply);
   } catch (error) {
+    if (history.length && history[history.length - 1].role === "user") history.pop();
     const code = String(error && (error.message || error));
     if (code === "NO_API_KEY") {
       answerEl.textContent = "Jaanu, app mein Gemini key save nahi hai.";
