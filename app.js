@@ -162,6 +162,13 @@ function offlineProjectHelp(question) {
   const q = String(question || "").toLowerCase().replace(/[?!.।,]/g, " ").replace(/\s+/g, " ").trim();
   const has = (...words) => words.some(word => q.includes(word));
   if (!q) return "अपना सवाल लिखो या माइक से बोलो।";
+  if (has("kaisi ho","कैसी हो","कैसा है","how are you","tum kaisi","तुम कैसी","हाल चाल","हालचाल","क्या हाल","kya haal")) return "मैं ठीक हूँ जानू, तुमसे बात करके अच्छा लग रहा है। 💙 तुम बताओ, तुम्हारा क्या हाल है? आज दिन कैसा जा रहा है?";
+  if (has("main theek","मैं ठीक","sab thik","सब ठीक","badhiya","बढ़िया","accha hu","अच्छा हूँ","theek hu","ठीक हूँ")) return "अच्छा लगा सुनकर जानू। 😊 आज कुछ खास हुआ या बस ऐसे ही बात करने आए हो? मैं सुन रही हूँ।";
+  if (has("pareshan","परेशान","udaas","उदास","dukhi","दुखी","mann nahi","मन नहीं","tension","टेंशन","akela","अकेला","lonely")) return "अरे जानू, क्या हुआ? आराम से बताओ, मैं सुन रही हूँ। तुम्हें अभी सलाह चाहिए या बस चाहते हो कि मैं तुम्हारी बात सुनूँ?";
+  if (has("tum sun rahi","सुन रही","sun rahi ho","सुन रही हो","baat karni","बात करनी","baat karo","बात करो","mere se baat","मुझसे बात")) return "हाँ जानू, मैं यहीं हूँ और तुम्हारी बात सुन रही हूँ। 💙 बताओ, मन में क्या चल रहा है?";
+  if (has("shukriya","धन्यवाद","thank you","thanks","sukriya")) return "अरे जानू, धन्यवाद की क्या बात है। 💙 जब चाहो बात करना। और बताओ, अब कैसा महसूस कर रहे हो?";
+  if (has("bye","बाय","good night","शुभ रात्रि","so jao","सो जाओ")) return "ठीक है जानू, अपना ध्यान रखना। 💙 जब वापस आओगे, फिर बात करेंगे।";
+  if (has("tumhara naam","तुम्हारा नाम","who are you","kaun ho","कौन हो")) return "मैं सुकून हूँ, तुम्हारी फोन वाली हिंदी सहायक। मैं ऑफलाइन कुछ बातचीत और जानकारी दे सकती हूँ, लेकिन बिना इंटरनेट और API के हर नए सवाल का जवाब नहीं जानती।";
   if (has("namaste","hello","hi ","हेलो","नमस्ते","सुकून","sukoon")) return "हाँ जानू, मैं सुन रही हूँ। इंटरनेट AI उपलब्ध न हो तब भी मैं अपनी सीमित ऑफलाइन जानकारी से मदद कर सकती हूँ।";
   if (has("jyotish","ज्योतिष","kundli","कुंडली","rashifal","राशिफल","rashi","राशि","grah","ग्रह","horoscope","shani","शनि","mangal dosh","मंगल दोष")) return "ज्योतिष भारतीय परंपरा है जिसमें जन्म के समय ग्रहों की स्थिति से व्यक्तित्व या भविष्य की व्याख्या की जाती है। इसकी भविष्यवाणियों के लिए मजबूत वैज्ञानिक प्रमाण नहीं हैं, इसलिए इसे निश्चित सत्य या चिकित्सा/पैसे के फैसलों का आधार न मानें। सामान्य राशि-परंपराएँ समझा सकती हूँ; व्यक्तिगत कुंडली के लिए जन्म-तिथि, सही समय और स्थान चाहिए।";
   if (has("human body","insan","इंसान","मानव शरीर","शरीर","body","heart","दिल","हृदय","brain","दिमाग","मस्तिष्क","lungs","फेफड़े","blood","खून","रक्त","kidney","गुर्दा","liver","लीवर")) return "मानव शरीर कई प्रणालियों से मिलकर बना है: मस्तिष्क और नसें नियंत्रण करती हैं; हृदय रक्त पंप करता है; फेफड़े ऑक्सीजन लेते हैं; पाचन तंत्र भोजन से पोषक तत्व लेता है; गुर्दे खून छानकर अपशिष्ट निकालते हैं; हड्डियाँ सहारा देती हैं और मांसपेशियाँ गति कराती हैं। सामान्य जानकारी के लिए यह उपयोगी है, लेकिन लक्षण या इलाज के लिए योग्य डॉक्टर से सलाह लें।";
@@ -216,7 +223,7 @@ async function answerQuestion(question) {
       speak(greeting);
       return;
     }
-    const reply = await askGemini(cleanQuestion);
+    const reply = offlineProjectHelp(cleanQuestion);
     answerEl.textContent = reply;
     statusEl.textContent = "Sukoon ka jawab";
     speak(reply);
@@ -285,23 +292,19 @@ async function listen() {
       answerEl.textContent = "Jaanu, ek baar phir mic dabakar saaf bolo.";
     }
   } catch (error) {
-    const localReply = offlineProjectHelp(q);
-    if (localReply) {
-      answerEl.textContent = localReply;
-      statusEl.textContent = "Sukoon offline madad";
-      speak(localReply);
-      return;
-    }
     const msg = String(error && (error.message || error));
     if (msg.includes("PERMISSION_DENIED")) {
       statusEl.textContent = "Android mic permission nahi mili";
       answerEl.textContent = "Jaanu, Settings > Apps > Sukoon AI > Permissions mein Microphone Allow karo. Phir app ko band karke dobara kholo.";
+      speak(answerEl.textContent);
     } else if (msg.includes("NOT_AVAILABLE")) {
       statusEl.textContent = "Speech recognition available nahi";
-      answerEl.textContent = "Is phone par speech recognition service nahi mil rahi. Google app ya Speech Services by Google update karo, aur internet check karo.";
+      answerEl.textContent = "Jaanu, is phone par speech recognition service nahi mil rahi. Google app ya Speech Services by Google update karo. Voice ko text mein badalne ke liye phone ki speech service chahiye; jawab dene ke liye API key nahi maangi jayegi.";
+      speak(answerEl.textContent);
     } else {
       statusEl.textContent = "Mic shuru nahi ho paya";
-      answerEl.textContent = "Jaanu, mic start nahi hua (" + msg + "). Android mein Microphone permission aur Google speech service check karo.";
+      answerEl.textContent = "Jaanu, mic start nahi hua. Microphone permission aur Google speech service check karo.";
+      speak(answerEl.textContent);
     }
   } finally {
     listening = false;
