@@ -187,6 +187,24 @@ function offlineProjectHelp(question) {
   if (has("general knowledge","सामान्य ज्ञान","gk","इतिहास","history","भूगोल","geography")) return "सामान्य ज्ञान में इतिहास, भूगोल, विज्ञान, नागरिक शास्त्र और रोज़मर्रा की तकनीक आती है। ऑफलाइन लाइब्रेरी में अभी कुछ बुनियादी तथ्य हैं, पूरी दुनिया का ज्ञान नहीं। कोई खास सवाल पूछो—जैसे किसी देश की राजधानी, ग्रह, कंप्यूटर या इतिहास का विषय।";
   return "जानू, इस सवाल का जवाब देने के लिए मेरी ऑफलाइन ज्ञान-सूची में पर्याप्त जानकारी नहीं है। अभी यह ऐप इंटरनेट AI से जवाब लेने की कोशिश करता है; API/quota या नेटवर्क न चले तो जवाब सीमित रहेगा। विषय को थोड़ा स्पष्ट लिखो—जैसे कंप्यूटर, विज्ञान, मानव शरीर, ज्योतिष, वेबसाइट, कोड या रोबोट।";
 }
+async function onlineKnowledge(question) {
+  const q = String(question || "").trim();
+  if (!q) return null;
+  // No API key: use Wikipedia's public, no-key search and summary endpoints.
+  const url = "https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=" +
+    encodeURIComponent(q) + "&gsrlimit=3&gsrnamespace=0&prop=extracts&exintro=1&explaintext=1&exsentences=5&format=json&origin=*";
+  const response = await fetchWithRetry(url, { headers: { "Accept": "application/json" } }, 2);
+  if (!response.ok) throw new Error("ONLINE_INFO_HTTP_" + response.status);
+  const data = await response.json();
+  const pages = Object.values(data?.query?.pages || {}).filter(p => p.extract && p.title);
+  if (!pages.length) return null;
+  const best = pages.sort((a,b) => (b.extract || "").length - (a.extract || "").length)[0];
+  const summary = String(best.extract).replace(/\s+/g, " ").trim().slice(0, 1200);
+  if (!summary) return null;
+  return "जानू, इंटरनेट पर मिली जानकारी के अनुसार — " + best.title + ": " + summary +
+    " (स्रोत: Wikipedia; यह पूरी दुनिया की हर जानकारी नहीं है, और ज़रूरी तथ्यों को जाँच लेना।)";
+}
+
 async function answerQuestion(question) {
   const q = (question || "").trim();
   if (!q || thinking) return;
@@ -223,7 +241,9 @@ async function answerQuestion(question) {
       speak(greeting);
       return;
     }
-    const reply = offlineProjectHelp(cleanQuestion);
+    let reply = null;
+    try { reply = await onlineKnowledge(cleanQuestion); } catch (_) {}
+    if (!reply) reply = offlineProjectHelp(cleanQuestion);
     answerEl.textContent = reply;
     statusEl.textContent = "Sukoon ka jawab";
     speak(reply);
