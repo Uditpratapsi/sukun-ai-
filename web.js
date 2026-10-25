@@ -22,6 +22,7 @@
     window.speechSynthesis.speak(utter);
   }
 
+  const hostedAIHistory = [];
   async function askGemini(question) {
     const q = String(question || "").trim();
     const lower = q.toLowerCase();
@@ -29,18 +30,25 @@
     if (/(kaisi ho|कैसी हो|how are you|haal chaal|हाल चाल|क्या हाल)/i.test(q)) return "मैं ठीक हूँ जानू, तुम बताओ तुम्हारा क्या हाल है? आज दिन कैसा जा रहा है? 💙";
     if (/(pareshan|परेशान|udaas|उदास|dukhi|दुखी|tension|टेंशन|akela|अकेला)/i.test(q)) return "अरे जानू, क्या हुआ? आराम से बताओ, मैं सुन रही हूँ। तुम्हें सलाह चाहिए या बस अपनी बात बतानी है?";
     if (/(baat karo|बात करो|sun rahi|सुन रही|mujhse baat|मुझसे बात)/i.test(q)) return "हाँ जानू, मैं यहीं हूँ और तुम्हारी बात सुन रही हूँ। बताओ, मन में क्या चल रहा है? 💙";
-    const url = "https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=" +
-      encodeURIComponent(q) + "&gsrlimit=3&gsrnamespace=0&prop=extracts&exintro=1&explaintext=1&exsentences=5&format=json&origin=*";
-    const response = await fetch(url, { headers: { "Accept": "application/json" } });
-    if (!response.ok) throw new Error("ONLINE_INFO_HTTP_" + response.status);
+    const messages = [
+      { role: "system", content: "Tumhara naam Sukoon hai. Tum friendly, helpful, Hindi bolne wali female AI assistant ho. User ko apnapan se jawab do, sawal ka seedha jawab pehle do. Coding, website, app aur robot banane mein practical steps aur code do. Latest fact confirm na ho to saaf batao. API key kabhi mat maango." },
+      ...hostedAIHistory.slice(-8),
+      { role: "user", content: q }
+    ];
+    const response = await fetch("https://api.llmfaucet.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer free", "Accept": "application/json" },
+      body: JSON.stringify({ model: "auto:smart", messages, temperature: 0.7, max_tokens: 700 })
+    });
+    if (!response.ok) throw new Error("HOSTED_AI_HTTP_" + response.status);
     const data = await response.json();
-    const pages = Object.values(data?.query?.pages || {}).filter(p => p.extract && p.title);
-    if (!pages.length) throw new Error("NO_ONLINE_RESULT");
-    const best = pages.sort((a,b) => (b.extract || "").length - (a.extract || "").length)[0];
-    return "जानू, इंटरनेट पर मिली जानकारी के अनुसार — " + best.title + ": " +
-      String(best.extract).replace(/\\s+/g, " ").trim().slice(0, 1200) +
-      " (स्रोत: Wikipedia; ज़रूरी तथ्यों को जाँच लेना।)";
+    const reply = String(data?.choices?.[0]?.message?.content || "").trim();
+    if (!reply) throw new Error("HOSTED_AI_EMPTY_REPLY");
+    hostedAIHistory.push({ role: "user", content: q }, { role: "assistant", content: reply });
+    while (hostedAIHistory.length > 16) hostedAIHistory.shift();
+    return reply;
   }
+
 
   function offlineProjectHelp(question) {
   const q = String(question || "").toLowerCase().replace(/[?!.।,]/g, " ").replace(/\s+/g, " ").trim();
