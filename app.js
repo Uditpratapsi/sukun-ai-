@@ -185,7 +185,7 @@ function offlineProjectHelp(question) {
   if (has("code","कोड","program","प्रोग्राम","python","java","javascript","error","बग","debug")) return "कोडिंग में पहले समस्या को छोटे चरणों में बाँटें: अपेक्षित input, output और error पहचानें; छोटा उदाहरण चलाएँ; error message की पूरी पंक्ति पढ़ें; फिर एक बार में एक बदलाव करके टेस्ट करें। पूरा code लिखने के लिए सवाल के साथ भाषा और इच्छित फीचर बताएं।";
   if (has("math","गणित","percentage","प्रतिशत","जोड़","जोड़ना","multiply","गुणा","divide","भाग")) return "गणित के सवाल में पूरा सवाल और संख्याएँ लिखें। प्रतिशत निकालने का तरीका: (भाग ÷ कुल) × 100। उदाहरण: 20, 80 का 25% है क्योंकि (20 ÷ 80) × 100 = 25।";
   if (has("general knowledge","सामान्य ज्ञान","gk","इतिहास","history","भूगोल","geography")) return "सामान्य ज्ञान में इतिहास, भूगोल, विज्ञान, नागरिक शास्त्र और रोज़मर्रा की तकनीक आती है। ऑफलाइन लाइब्रेरी में अभी कुछ बुनियादी तथ्य हैं, पूरी दुनिया का ज्ञान नहीं। कोई खास सवाल पूछो—जैसे किसी देश की राजधानी, ग्रह, कंप्यूटर या इतिहास का विषय।";
-  return "जानू, इस सवाल का जवाब देने के लिए मेरी ऑफलाइन ज्ञान-सूची में पर्याप्त जानकारी नहीं है। अभी यह ऐप इंटरनेट AI से जवाब लेने की कोशिश करता है; API/quota या नेटवर्क न चले तो जवाब सीमित रहेगा। विषय को थोड़ा स्पष्ट लिखो—जैसे कंप्यूटर, विज्ञान, मानव शरीर, ज्योतिष, वेबसाइट, कोड या रोबोट।";
+  return null;
 }
 async function onlineKnowledge(question) {
   const q = String(question || "").trim();
@@ -241,9 +241,11 @@ async function answerQuestion(question) {
       speak(greeting);
       return;
     }
-    let reply = null;
-    try { reply = await onlineKnowledge(cleanQuestion); } catch (_) {}
-    if (!reply) reply = offlineProjectHelp(cleanQuestion);
+    let reply = offlineProjectHelp(cleanQuestion);
+    if (!reply) {
+      try { reply = await onlineKnowledge(cleanQuestion); } catch (_) {}
+    }
+    if (!reply) reply = "जानू, अभी इस सवाल की जानकारी नहीं मिली। इंटरनेट कनेक्शन जाँचो या सवाल को दूसरे शब्दों में पूछो।";
     answerEl.textContent = reply;
     statusEl.textContent = "Sukoon ka jawab";
     speak(reply);
