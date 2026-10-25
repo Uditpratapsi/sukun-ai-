@@ -91,6 +91,13 @@ async function answerQuestion(question) {
       statusEl.textContent = "Sukoon ka jawab";
       speak(reply);
     } catch (error) {
+      const localReply = offlineProjectHelp(q);
+      if (localReply) {
+        answerEl.textContent = localReply;
+        statusEl.textContent = "Sukoon offline madad";
+        speak(localReply);
+        return;
+      }
       const code = String(error && (error.message || error));
       if (code === "NO_API_KEY") {
         answerEl.textContent = "Jaanu, Gemini API key nahi di gayi. Google AI Studio ki key daal kar phir sawaal poochho.";
