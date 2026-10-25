@@ -7,6 +7,7 @@ on:
       - 'index.html'
       - 'app.js'
       - 'web.js'
+      - 'features.js'
       - '.github/workflows/build.yml'
 
 permissions:
