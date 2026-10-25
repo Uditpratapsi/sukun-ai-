@@ -1,4 +1,5 @@
 import { SpeechRecognition } from "@capacitor-community/speech-recognition";
+import { initFeatures, handleLocalCommand } from "./features.js";
 
 const statusEl = document.getElementById("status");
 const answerEl = document.getElementById("answer");
@@ -186,6 +187,13 @@ async function answerQuestion(question) {
   statusEl.textContent = "Sukoon soch rahi hai…";
   answerEl.textContent = "Ek pal jaanu, jawab taiyar kar rahi hoon.";
   try {
+    const localCommandReply = await handleLocalCommand(q);
+    if (localCommandReply) {
+      answerEl.textContent = localCommandReply;
+      statusEl.textContent = "Sukoon task manager";
+      speak(localCommandReply);
+      return;
+    }
     const normalized = q.toLocaleLowerCase("hi-IN").replace(/\s+/g, " ").trim();
     if (["sukoon", "sukoon ai", "सुकून", "सुकून एआई", "हे सुकून", "सुनो सुकून"].includes(normalized)) {
       const greeting = "हाँ जानू, बोलो ना! मैं सुन रही हूँ।";
@@ -309,3 +317,6 @@ form.addEventListener("submit", async event => {
   typed.value = "";
   await answerQuestion(question);
 });
+
+
+initFeatures();
