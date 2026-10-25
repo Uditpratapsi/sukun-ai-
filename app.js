@@ -34,6 +34,22 @@ function getApiKey() {
   return (localStorage.getItem(KEY_NAME) || "").trim();
 }
 
+async function fetchWithRetry(url, options, attempts = 4) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    let response;
+    try {
+      response = await fetch(url, options);
+    } catch (error) {
+      if (attempt === attempts - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** attempt)));
+      continue;
+    }
+    if (![500, 502, 503, 504].includes(response.status) || attempt === attempts - 1) return response;
+    await new Promise(resolve => setTimeout(resolve, 1000 * (2 ** attempt)));
+  }
+  throw new Error("Network request failed");
+}
+
 function showSavedKeyState() {
   const saved = getApiKey();
   if (keyStatus) keyStatus.textContent = saved ? "Gemini key is saved on this phone." : "AI jawab ke liye Gemini API key ek baar save karein.";
@@ -63,7 +79,7 @@ showSavedKeyState();
 
 async function chooseModels(apiKey) {
   try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", {
+    const response = await fetchWithRetry("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", {
       headers: { "x-goog-api-key": apiKey }
     });
     if (response.ok) {
@@ -96,7 +112,7 @@ async function askGemini(question) {
   history.push({ role: "user", parts: [{ text: question }] });
   let lastError = "";
   for (const model of models) {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
       {
         method: "POST",
