@@ -20,7 +20,7 @@ main{width:100%;max-width:520px;flex:1;display:flex;flex-direction:column;align-
 .call-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:min(100%,300px);min-height:56px;border-radius:20px;border:1px solid #8bdfffaa;background:linear-gradient(115deg,#145cc9,#5734b8 70%,#873ea4);color:white;font-size:15px;font-weight:700;letter-spacing:.2px;box-shadow:0 0 28px #247cff35,inset 0 1px #ffffff30;cursor:pointer;transition:transform .2s,filter .2s}.call-btn:active{transform:scale(.98);filter:brightness(1.15)}.call-btn .phone{font-size:20px}.mic{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.hint{font-size:11px;color:#8a9abb;text-align:center;margin:10px 0 13px}
 .chat{display:flex;gap:8px;width:100%;margin-top:4px}.chat input{flex:1;min-width:0;border:1px solid #293b61;background:#0b1329d9;color:#fff;border-radius:15px;padding:14px;font-size:14px;outline:none}.chat input:focus{border-color:#62cfff;box-shadow:0 0 0 3px #46baff18}.chat button{border:1px solid #4e83ff;border-radius:15px;padding:0 17px;background:linear-gradient(135deg,#2563eb,#6338c9);color:#fff;font-weight:bold}
 .quick-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:13px 0 0}.chip{font-size:11px;color:#c5d5f4;background:#111d38;border:1px solid #2d4167;padding:8px 11px;border-radius:999px}
-.note{font-size:10px;line-height:1.55;color:#7082a5;text-align:center;margin-top:13px;max-width:410px}footer{width:100%;text-align:center;padding:13px;color:#627497;font-size:10px;letter-spacing:3px;border-top:1px solid #1b2947;margin-top:8px}
+.feature-panel{width:100%;max-width:450px;margin-top:17px;padding:16px;border:1px solid #263b61;border-radius:20px;background:linear-gradient(145deg,#0b1530dd,#10132bdd);box-shadow:0 10px 35px #0003}.feature-panel h2{font-size:15px;letter-spacing:.5px;margin:0 0 9px;color:#dbeaff}.feature-panel p{font-size:11px;color:#91a1c3;line-height:1.55;margin:5px 0 11px}.feature-panel input{width:100%;min-width:0;border:1px solid #2b4168;background:#080f21;color:#fff;border-radius:11px;padding:11px;font-size:13px;margin:4px 0}.feature-panel button{border:1px solid #4e83ff;border-radius:11px;padding:10px 13px;background:linear-gradient(135deg,#2563eb,#6338c9);color:#fff;font-weight:700;font-size:12px}.feature-row{display:flex;gap:8px;align-items:center}.feature-row input{flex:1}.feature-row button{white-space:nowrap}.task-list{display:grid;gap:8px;margin-top:10px}.task-row,.alert-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid #25375a;border-radius:12px;background:#0a1124}.task-copy{min-width:0;display:grid;gap:4px}.task-copy strong{font-size:12px;overflow-wrap:anywhere}.task-copy small,.alert-entry small{font-size:10px;color:#90a2c4}.task-done{padding:7px 9px!important}.empty-state{font-size:11px;color:#7789ad;padding:9px 0}.feature-status{min-height:18px;font-size:11px;color:var(--cyan);margin-top:8px}.security-divider{height:1px;background:#253451;margin:16px 0}.security-lock{position:fixed;inset:0;z-index:20;background:rgba(3,6,17,.98);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center}.security-lock[hidden],.feature-panel [hidden]{display:none!important}.security-lock h2{font-size:23px;color:#d9f8ff}.security-lock p{color:#93a8cf;font-size:12px;line-height:1.6}.security-lock form{display:flex;gap:8px;width:100%;max-width:300px}.security-lock input{flex:1;min-width:0;padding:13px;border-radius:12px;border:1px solid #37517c;background:#0c1730;color:white}.security-lock button{border:1px solid #4e83ff;border-radius:12px;padding:12px;background:#234fd1;color:white}.note{font-size:10px;line-height:1.55;color:#7082a5;text-align:center;margin-top:13px;max-width:410px}footer{width:100%;text-align:center;padding:13px;color:#627497;font-size:10px;letter-spacing:3px;border-top:1px solid #1b2947;margin-top:8px}
 button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.face-halo{animation:none}}
 </style>
@@ -40,6 +40,30 @@ button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:
  <div class="hint" id="hint">Baat shuru karne par microphone permission maangi ja sakti hai.</div>
  <form class="chat" id="chat"><input id="typed" autocomplete="off" placeholder="Sawaal ya kaam likho…" aria-label="Sawaal ya kaam"><button type="submit">Bhejo</button></form>
  <div class="quick-actions" aria-hidden="true"><span class="chip">✦ Samanya Gyan</span><span class="chip">⌘ Code & Apps</span><span class="chip">◌ Kaam ki yojana</span></div>
+ <section class="feature-panel" aria-label="Kaam aur suraksha">
+  <h2>◌ Kaam aur Reminder</h2>
+  <p>Kaam save karo aur waqt aane par phone notification pao. Reminder lagane ke liye notification permission do.</p>
+  <form id="taskForm">
+   <input id="taskTitle" maxlength="180" placeholder="Kaunsa kaam yaad rakhna hai?" aria-label="Kaam ka naam" required>
+   <div class="feature-row"><input id="taskDue" type="datetime-local" aria-label="Reminder ka samay"><button type="submit">Save</button></div>
+  </form>
+  <div id="taskList" class="task-list"></div>
+  <div class="security-divider"></div>
+  <h2>♧ App Security</h2>
+  <p>PIN se Sukoon app lock kar sakte ho. Teen galat PIN par app ke andar alert log aur notification ki koshish hogi. Yeh poore phone ko lock nahi karta aur band app mein kisi ka chehra chupke se photo nahi kheenchta.</p>
+  <div class="feature-row"><button id="securityToggle" type="button">सुरक्षा चालू करें</button><span id="securityState" class="feature-status">सुरक्षा बंद है।</span></div>
+  <form id="pinForm" hidden>
+   <input id="securityPin" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" placeholder="Naya 4–8 digit PIN" aria-label="Security PIN" required>
+   <button type="submit">PIN save</button>
+  </form>
+  <div id="securityAlerts" class="task-list"></div>
+  <div id="featureStatus" class="feature-status" role="status"></div>
+ </section>
+ <div id="securityLock" class="security-lock" hidden>
+  <div class="brand">SUKOON SECURITY</div><h2>App locked 🔒</h2><p>Apna security PIN daalo. Galat koshish record ho sakti hai.</p>
+  <form id="unlockForm"><input id="unlockPin" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" placeholder="PIN" aria-label="Unlock PIN" required><button type="submit">खोलें</button></form>
+ </div>
+ <div class="note">Task reminders Android notification permission par nirbhar hain. Yeh local reminders hain, apne aap remote kaam karne wali service nahi. Doosre phone se command ke liye secure backend abhi connect nahi hai.</div>
  <div class="note">Dot-face animation har baar page khulne par banti hai. Voice input is device ki speech service par nirbhar hai. Background mein kaam aur doosre phone se remote control ke liye secure online service abhi alag se banani aur test karni hogi.</div>
 </main>
 <footer>S U K O O N &nbsp; • &nbsp; LISTEN · THINK · HELP</footer>
