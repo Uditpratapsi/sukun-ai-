@@ -23,47 +23,23 @@
   }
 
   async function askGemini(question) {
-    let apiKey = (localStorage.getItem(KEY_NAME) || "").trim();
-    if (!apiKey) {
-      apiKey = (window.prompt("Sukoon AI ko jawab dene ke liye Google AI Studio ki Gemini API key paste karein. Key isi phone par save hogi:") || "").trim();
-      if (!apiKey) throw new Error("NO_API_KEY");
-      if (!apiKey.startsWith("AIza")) throw new Error("BAD_API_KEY");
-      localStorage.setItem(KEY_NAME, apiKey);
-    }
-
-    const models = ["gemini-3.8-flash", "gemini-2.5-flash"];
-    let lastError = "";
-    for (const model of models) {
-      const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: "Tum Sukoon AI ho, Ritesh ki Hindi bolne wali, pyaar se baat karne wali personal assistant. Saral Hindi/Hinglish mein seedha aur sahi jawab do. Apne aap ko AI assistant batao; jhootha dawa mat karo. Agar jaankari na ho to saaf batao. User ko jaanu keh sakti ho, lekin har line mein nahi." }] },
-            contents: [{ role: "user", parts: [{ text: question }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 900 }
-          })
-        }
-      );
-
-      let data = {};
-      try { data = await response.json(); } catch (_) {}
-      if (response.status === 404 && model !== models[models.length - 1]) {
-        lastError = data?.error?.message || ("Model " + model + " available nahi hai");
-        continue;
-      }
-      if (!response.ok) {
-        const detail = String(data?.error?.message || ("HTTP " + response.status)).slice(0, 450);
-        const error = new Error("GEMINI_HTTP_" + response.status + ": " + detail);
-        error.status = response.status;
-        throw error;
-      }
-      const reply = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
-      if (!reply) throw new Error("EMPTY_REPLY: " + (data?.promptFeedback?.blockReason || data?.candidates?.[0]?.finishReason || "Khali jawab"));
-      return reply;
-    }
-    throw new Error("MODEL_NOT_FOUND: " + lastError);
+    const q = String(question || "").trim();
+    const lower = q.toLowerCase();
+    if (/^(sukoon|sukoon ai|सुकून|सुनो सुकून)$/.test(lower)) return "हाँ जानू, बोलो ना! मैं सुन रही हूँ। 💙";
+    if (/(kaisi ho|कैसी हो|how are you|haal chaal|हाल चाल|क्या हाल)/i.test(q)) return "मैं ठीक हूँ जानू, तुम बताओ तुम्हारा क्या हाल है? आज दिन कैसा जा रहा है? 💙";
+    if (/(pareshan|परेशान|udaas|उदास|dukhi|दुखी|tension|टेंशन|akela|अकेला)/i.test(q)) return "अरे जानू, क्या हुआ? आराम से बताओ, मैं सुन रही हूँ। तुम्हें सलाह चाहिए या बस अपनी बात बतानी है?";
+    if (/(baat karo|बात करो|sun rahi|सुन रही|mujhse baat|मुझसे बात)/i.test(q)) return "हाँ जानू, मैं यहीं हूँ और तुम्हारी बात सुन रही हूँ। बताओ, मन में क्या चल रहा है? 💙";
+    const url = "https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=" +
+      encodeURIComponent(q) + "&gsrlimit=3&gsrnamespace=0&prop=extracts&exintro=1&explaintext=1&exsentences=5&format=json&origin=*";
+    const response = await fetch(url, { headers: { "Accept": "application/json" } });
+    if (!response.ok) throw new Error("ONLINE_INFO_HTTP_" + response.status);
+    const data = await response.json();
+    const pages = Object.values(data?.query?.pages || {}).filter(p => p.extract && p.title);
+    if (!pages.length) throw new Error("NO_ONLINE_RESULT");
+    const best = pages.sort((a,b) => (b.extract || "").length - (a.extract || "").length)[0];
+    return "जानू, इंटरनेट पर मिली जानकारी के अनुसार — " + best.title + ": " +
+      String(best.extract).replace(/\\s+/g, " ").trim().slice(0, 1200) +
+      " (स्रोत: Wikipedia; ज़रूरी तथ्यों को जाँच लेना।)";
   }
 
   function offlineProjectHelp(question) {
