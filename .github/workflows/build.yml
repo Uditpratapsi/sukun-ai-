@@ -41,6 +41,7 @@ jobs:
           EOF
           mkdir -p www
           cp index.html www/index.html
+          cp web.js www/web.js
           npx esbuild app.js --bundle --format=iife --outfile=www/bundle.js
           npx cap add android
           sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
