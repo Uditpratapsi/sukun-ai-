@@ -157,6 +157,19 @@ async function askGemini(question) {
   throw new Error("MODEL_NOT_FOUND: " + lastError);
 }
 
+function offlineProjectHelp(question) {
+  const q = String(question || "").toLowerCase();
+  const robot = /robot|रोबोट|arduino|raspberry|sensor|सेंसर/.test(q);
+  const website = /website|वेबसाइट|web site|html|css|javascript|वेब साइट/.test(q);
+  const app = /android app|app banana|ऐप बन|एप बन|application|apk|मोबाइल ऐप|ऐप तैयार/.test(q);
+  const code = /code|कोड|program|प्रोग्राम|python|java|javascript/.test(q);
+  if (robot) return "अभी ऑफलाइन मदद: रोबोट बनाने के लिए पहले काम तय करें (जैसे लाइन-फॉलोअर या रिमोट-कंट्रोल), फिर Arduino/ESP32 कंट्रोलर, मोटर ड्राइवर, मोटर, बैटरी और सेंसर चुनें। वायरिंग और कोड हार्डवेयर के अनुसार बदलेंगे। बिजली जोड़ने से पहले वोल्टेज/पिन जाँचें। इंटरनेट जुड़ने पर मैं पूरा पार्ट्स-लिस्ट, वायरिंग और कोड बनाने में मदद करूँगी।";
+  if (website) return "अभी ऑफलाइन मदद: वेबसाइट के लिए 3 फाइलें बनती हैं—index.html (ढाँचा), style.css (डिज़ाइन), script.js (बटन/फीचर)। पहले पेज का उद्देश्य और फीचर लिखें, फिर मोबाइल-फ्रेंडली लेआउट बनाकर ब्राउज़र में जाँचें। इंटरनेट उपलब्ध होने पर मैं तुम्हारे लिए पूरा कोड तैयार कर सकती हूँ।";
+  if (app) return "अभी ऑफलाइन मदद: Android ऐप की योजना—(1) स्क्रीन/फीचर सूची, (2) UI, (3) लॉजिक, (4) permissions, (5) APK build, (6) फोन पर install/test। मौजूदा Sukoon ऐप में बदलाव करेंगे, अलग नया प्रोजेक्ट नहीं बनाएँगे। इंटरनेट उपलब्ध होने पर मैं वास्तविक फाइलों में बदलाव और build जाँच आगे बढ़ा सकती हूँ।";
+  if (code) return "अभी ऑफलाइन मदद: कोड लिखने से पहले भाषा, इनपुट, अपेक्षित आउटपुट और error तय करें। कोड को छोटे हिस्सों में चलाकर जाँचें। इस APK में अभी पूरा स्थानीय AI मॉडल मौजूद होने की पुष्टि नहीं है, इसलिए जटिल नया कोड बनाने के लिए इंटरनेट AI की ज़रूरत होगी।";
+  return "जानू, अभी इंटरनेट AI उपलब्ध नहीं है। इस ऐप में फिलहाल पूरा स्थानीय AI मॉडल जुड़ा हुआ नहीं है, इसलिए मैं ऑफलाइन रहते हुए हर सवाल का बुद्धिमान जवाब नहीं दे सकती। ऐप/वेबसाइट/कोड/रोबोट के लिए बुनियादी योजना दे सकती हूँ; पूरा जवाब पाने के लिए इंटरनेट और उपलब्ध Gemini quota चाहिए।";
+}
+
 async function answerQuestion(question) {
   const q = (question || "").trim();
   if (!q || thinking) return;
@@ -248,6 +261,13 @@ async function listen() {
       answerEl.textContent = "Jaanu, ek baar phir mic dabakar saaf bolo.";
     }
   } catch (error) {
+    const localReply = offlineProjectHelp(q);
+    if (localReply) {
+      answerEl.textContent = localReply;
+      statusEl.textContent = "Sukoon offline madad";
+      speak(localReply);
+      return;
+    }
     const msg = String(error && (error.message || error));
     if (msg.includes("PERMISSION_DENIED")) {
       statusEl.textContent = "Android mic permission nahi mili";
