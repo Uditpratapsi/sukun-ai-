@@ -187,6 +187,29 @@ function offlineProjectHelp(question) {
   if (has("general knowledge","सामान्य ज्ञान","gk","इतिहास","history","भूगोल","geography")) return "सामान्य ज्ञान में इतिहास, भूगोल, विज्ञान, नागरिक शास्त्र और रोज़मर्रा की तकनीक आती है। ऑफलाइन लाइब्रेरी में अभी कुछ बुनियादी तथ्य हैं, पूरी दुनिया का ज्ञान नहीं। कोई खास सवाल पूछो—जैसे किसी देश की राजधानी, ग्रह, कंप्यूटर या इतिहास का विषय।";
   return null;
 }
+const hostedAIHistory = [];
+async function askHostedAI(question) {
+  const q = String(question || "").trim();
+  if (!q) return "";
+  const messages = [
+    { role: "system", content: SYSTEM_PROMPT + "\nTum user ke sawaal ka seedha, upyogi jawab do. Coding/robot ke kaam mein steps aur zaroori code do. Agar latest fact verify nahi kar sakti to saaf batao. User se API key mat maango." },
+    ...hostedAIHistory.slice(-8),
+    { role: "user", content: q }
+  ];
+  const response = await fetchWithRetry("https://api.llmfaucet.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer free", "Accept": "application/json" },
+    body: JSON.stringify({ model: "auto:smart", messages, temperature: 0.7, max_tokens: 700 })
+  }, 2);
+  if (!response.ok) throw new Error("HOSTED_AI_HTTP_" + response.status);
+  const data = await response.json();
+  const reply = String(data?.choices?.[0]?.message?.content || "").trim();
+  if (!reply) throw new Error("HOSTED_AI_EMPTY_REPLY");
+  hostedAIHistory.push({ role: "user", content: q }, { role: "assistant", content: reply });
+  while (hostedAIHistory.length > 16) hostedAIHistory.shift();
+  return reply;
+}
+
 async function onlineKnowledge(question) {
   const q = String(question || "").trim();
   if (!q) return null;
@@ -241,11 +264,13 @@ async function answerQuestion(question) {
       speak(greeting);
       return;
     }
-    let reply = offlineProjectHelp(cleanQuestion);
+    let reply = "";
+    try { reply = await askHostedAI(cleanQuestion); } catch (_) {}
+    if (!reply) reply = offlineProjectHelp(cleanQuestion);
     if (!reply) {
       try { reply = await onlineKnowledge(cleanQuestion); } catch (_) {}
     }
-    if (!reply) reply = "जानू, अभी इस सवाल की जानकारी नहीं मिली। इंटरनेट कनेक्शन जाँचो या सवाल को दूसरे शब्दों में पूछो।";
+    if (!reply) reply = "जानू, अभी ऑनलाइन AI उपलब्ध नहीं है और इस सवाल की जानकारी भी नहीं मिली। थोड़ी देर बाद फिर कोशिश करो।";
     answerEl.textContent = reply;
     statusEl.textContent = "Sukoon ka jawab";
     speak(reply);
