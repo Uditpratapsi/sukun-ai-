@@ -213,6 +213,7 @@ async function answerQuestion(question) {
     statusEl.textContent = "Sukoon ka jawab";
     speak(reply);
   } catch (error) {
+    if (history.length && history[history.length - 1].role === "user") history.pop();
     const localReply = offlineProjectHelp(q);
     if (localReply) {
       answerEl.textContent = localReply;
@@ -220,7 +221,6 @@ async function answerQuestion(question) {
       speak(localReply);
       return;
     }
-    if (history.length && history[history.length - 1].role === "user") history.pop();
     const code = String(error && (error.message || error));
     if (code === "NO_API_KEY") {
       answerEl.textContent = "Jaanu, app mein Gemini key save nahi hai.";
