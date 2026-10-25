@@ -65,34 +65,49 @@ async function askGemini(question) {
     showSavedKeyState();
   }
 
-  const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=" + encodeURIComponent(apiKey),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{
-            text: "Tum Sukoon AI ho, Ritesh ki Hindi bolne wali, pyaar se baat karne wali personal assistant. Hamesha saral Hindi/Hinglish mein seedha aur sahi jawab do. Apne aap ko AI assistant batao; jhootha dawa mat karo. Agar current jaankari ki zaroorat ho aur tumhe pata na ho to saaf batao. User ko 'jaanu' keh sakti ho, lekin har line mein nahi."
-          }]
+  const models = ["gemini-3.8-flash", "gemini-2.5-flash"];
+  let lastError = "";
+  for (const model of models) {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
         },
-        contents: [{ role: "user", parts: [{ text: question }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 700 }
-      })
-    }
-  );
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{
+              text: "Tum Sukoon AI ho, Ritesh ki Hindi bolne wali, pyaar se baat karne wali personal assistant. Hamesha saral Hindi/Hinglish mein seedha aur sahi jawab do. Apne aap ko AI assistant batao; jhootha dawa mat karo. Agar current jaankari ki zaroorat ho aur tumhe pata na ho to saaf batao. User ko 'jaanu' keh sakti ho, lekin har line mein nahi."
+            }]
+          },
+          contents: [{ role: "user", parts: [{ text: question }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 700 }
+        })
+      }
+    );
 
-  let data = {};
-  try { data = await response.json(); } catch (_) {}
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) throw new Error("BAD_API_KEY");
-    if (response.status === 404) throw new Error("MODEL_NOT_FOUND");
-    if (response.status === 429) throw new Error("RATE_LIMIT");
-    throw new Error("API_ERROR_" + response.status);
+    let data = {};
+    try { data = await response.json(); } catch (_) {}
+    if (response.status === 404 && model !== models[models.length - 1]) {
+      lastError = data?.error?.message || "Model " + model + " available nahi hai";
+      continue;
+    }
+    if (!response.ok) {
+      const detail = String(data?.error?.message || ("HTTP " + response.status)).slice(0, 500);
+      const error = new Error("GEMINI_HTTP_" + response.status + ": " + detail);
+      error.status = response.status;
+      throw error;
+    }
+    const reply = data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("").trim();
+    if (!reply) {
+      const detail = data?.promptFeedback?.blockReason || data?.candidates?.[0]?.finishReason || "Khali jawab";
+      throw new Error("EMPTY_REPLY: " + detail);
+    }
+    return reply;
   }
-  const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("").trim();
-  if (!text) throw new Error("EMPTY_REPLY");
-  return text;
+  throw new Error("MODEL_NOT_FOUND: " + lastError);
 }
 
 async function answerQuestion(question) {
@@ -109,20 +124,20 @@ async function answerQuestion(question) {
   } catch (error) {
     const code = String(error && (error.message || error));
     if (code === "NO_API_KEY") {
-      answerEl.textContent = "Jaanu, AI jawab chalu karne ke liye neeche Gemini API key ek baar save karo. Key isi phone par rahegi.";
-      statusEl.textContent = "Gemini key abhi save nahi hai";
-    } else if (code === "BAD_API_KEY") {
-      answerEl.textContent = "Jaanu, Gemini API key galat hai ya uski permission nahi hai. Google AI Studio se key check karo.";
-      statusEl.textContent = "API key check karo";
-    } else if (code === "MODEL_NOT_FOUND") {
-      answerEl.textContent = "Jaanu, is API key ke liye Gemini model available nahi hai. Google AI Studio mein available model check karna hoga.";
-      statusEl.textContent = "Gemini model available nahi";
-    } else if (code === "RATE_LIMIT") {
-      answerEl.textContent = "Jaanu, Gemini ki request limit abhi poori ho gayi hai. Thodi der baad dobara try karo.";
-      statusEl.textContent = "Thodi der baad try karo";
+      answerEl.textContent = "Jaanu, app mein Gemini key save nahi hai.";
+      statusEl.textContent = "Gemini key missing";
+    } else if (code.startsWith("GEMINI_HTTP_401") || code.startsWith("GEMINI_HTTP_403")) {
+      answerEl.textContent = "Gemini ne request reject ki. Asli wajah: " + code.replace(/^GEMINI_HTTP_\\d+:?\\s*/, "") + " (HTTP " + (error.status || "") + "). Ye sirf key galat hone ka proof nahi hai.";
+      statusEl.textContent = "Gemini permission / project error";
+    } else if (code.startsWith("MODEL_NOT_FOUND")) {
+      answerEl.textContent = "Jaanu, app ke dono configured Gemini models available nahi mile. Server detail: " + code;
+      statusEl.textContent = "Gemini model error";
+    } else if (code.startsWith("GEMINI_HTTP_429")) {
+      answerEl.textContent = "Gemini request limit ya quota ka issue hai: " + code;
+      statusEl.textContent = "Gemini quota limit";
     } else {
-      answerEl.textContent = "Jaanu, AI server se jawab nahi aaya. Internet check karke dobara koshish karo. (" + code + ")";
-      statusEl.textContent = "AI connection mein dikkat";
+      answerEl.textContent = "Gemini se jawab nahi aaya. Asli server detail: " + code;
+      statusEl.textContent = "AI connection error";
     }
   } finally {
     thinking = false;
