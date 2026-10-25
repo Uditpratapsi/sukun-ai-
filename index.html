@@ -6,24 +6,77 @@
 <meta name="theme-color" content="#050816">
 <title>Sukoon AI</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#050816;color:#f4f8ff;font-family:Arial,sans-serif;min-height:100dvh;display:flex;flex-direction:column;align-items:center}
-header{text-align:center;padding:22px 12px 8px}.brand{font-size:12px;letter-spacing:4px;color:#70dcff}h1{font-size:30px;letter-spacing:2px;margin:10px 0 5px;background:linear-gradient(90deg,#fff,#54caff,#a18bff);-webkit-background-clip:text;background-clip:text;color:transparent}.subtitle{color:#8295b5;font-size:13px}
-main{width:100%;max-width:520px;flex:1;display:flex;flex-direction:column;align-items:center;padding:16px;min-height:0}.orb{width:150px;height:150px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;margin:12px 0 22px;background:radial-gradient(circle at 35% 30%,#344b99,#111b47 42%,#080d20 72%);box-shadow:0 0 30px #167bff66,0 0 70px #164cff35,inset 0 0 25px #61eaff44;border:1px solid #60cfff77}.orb:before,.orb:after{content:"";position:absolute;border:1px solid #52d9ff88;border-radius:50%;inset:-10px;animation:pulse 3s infinite}.orb:after{inset:-20px;animation-delay:1.5s}.orb span{font-size:56px;filter:drop-shadow(0 0 15px #67e5ff)}@keyframes pulse{0%{transform:scale(.94);opacity:.7}100%{transform:scale(1.12);opacity:0}}
-.status{color:#70dcff;font-size:14px;text-align:center;min-height:22px}.answer{width:100%;max-width:450px;min-height:64px;max-height:24vh;overflow:auto;text-align:center;line-height:1.6;color:#d8e6ff;font-size:16px;margin:12px 0}.mic{width:78px;height:78px;border-radius:50%;border:1px solid #75ddff;background:linear-gradient(145deg,#1663cb,#582bce);color:white;font-size:31px;cursor:pointer;box-shadow:0 0 25px #247cff66}.mic.listening{background:#b32659;box-shadow:0 0 30px #ff3c8d88}.hint{font-size:12px;color:#8295b5;text-align:center;margin:12px 0 16px}.chat{display:flex;gap:8px;width:100%;margin-top:6px}.chat input{flex:1;min-width:0;border:1px solid #293b61;background:#0b1329;color:#fff;border-radius:14px;padding:13px;font-size:15px}.chat button{border:0;border-radius:14px;padding:0 16px;background:#2563eb;color:#fff;font-weight:bold}.note{font-size:11px;line-height:1.5;color:#7182a2;text-align:center;margin-top:12px}footer{width:100%;text-align:center;padding:14px;color:#667896;font-size:11px;border-top:1px solid #1b2947;margin-top:8px}button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:3px}
+:root{color-scheme:dark;--cyan:#72efff;--blue:#5485ff;--violet:#a78bfa;--muted:#91a1c3}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 22%,#132552 0%,#080d20 42%,#030611 100%);color:#f4f8ff;font-family:Inter,Arial,sans-serif;min-height:100dvh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+header{text-align:center;padding:24px 12px 4px;z-index:1}.brand{font-size:10px;letter-spacing:5px;color:var(--cyan);text-transform:uppercase}h1{font-size:29px;letter-spacing:3px;margin:9px 0 5px;background:linear-gradient(90deg,#fff,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}.subtitle{color:var(--muted);font-size:13px}
+main{width:100%;max-width:520px;flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 18px 22px;min-height:0;z-index:1}
+.face-stage{width:min(82vw,330px);height:min(82vw,330px);max-height:330px;position:relative;margin:2px 0 0;display:grid;place-items:center}
+#sukoonFace{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 13px #3edbff25)}
+.face-halo{position:absolute;inset:12%;border-radius:50%;background:radial-gradient(circle,#235ac22b 0%,#5d39a315 48%,transparent 72%);animation:halo 4s ease-in-out infinite;pointer-events:none}
+@keyframes halo{0%,100%{transform:scale(.88);opacity:.55}50%{transform:scale(1.08);opacity:1}}
+.face-caption{position:absolute;bottom:3px;left:0;right:0;text-align:center;color:#81a9d8;font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.8}
+.status{color:var(--cyan);font-size:14px;text-align:center;min-height:22px;margin-top:5px}.answer{width:100%;max-width:450px;min-height:55px;max-height:20vh;overflow:auto;text-align:center;line-height:1.65;color:#dce7ff;font-size:15px;margin:9px 0 12px}
+.call-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:min(100%,300px);min-height:56px;border-radius:20px;border:1px solid #8bdfffaa;background:linear-gradient(115deg,#145cc9,#5734b8 70%,#873ea4);color:white;font-size:15px;font-weight:700;letter-spacing:.2px;box-shadow:0 0 28px #247cff35,inset 0 1px #ffffff30;cursor:pointer;transition:transform .2s,filter .2s}.call-btn:active{transform:scale(.98);filter:brightness(1.15)}.call-btn .phone{font-size:20px}.mic{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.hint{font-size:11px;color:#8a9abb;text-align:center;margin:10px 0 13px}
+.chat{display:flex;gap:8px;width:100%;margin-top:4px}.chat input{flex:1;min-width:0;border:1px solid #293b61;background:#0b1329d9;color:#fff;border-radius:15px;padding:14px;font-size:14px;outline:none}.chat input:focus{border-color:#62cfff;box-shadow:0 0 0 3px #46baff18}.chat button{border:1px solid #4e83ff;border-radius:15px;padding:0 17px;background:linear-gradient(135deg,#2563eb,#6338c9);color:#fff;font-weight:bold}
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:13px 0 0}.chip{font-size:11px;color:#c5d5f4;background:#111d38;border:1px solid #2d4167;padding:8px 11px;border-radius:999px}
+.note{font-size:10px;line-height:1.55;color:#7082a5;text-align:center;margin-top:13px;max-width:410px}footer{width:100%;text-align:center;padding:13px;color:#627497;font-size:10px;letter-spacing:3px;border-top:1px solid #1b2947;margin-top:8px}
+button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.face-halo{animation:none}}
 </style>
 </head>
 <body>
-<header><div class="brand">PERSONAL AI ASSISTANT</div><h1>SUKOON AI</h1><div class="subtitle">Tumhari baat sunne ke liye 💙</div></header>
+<header><div class="brand">YOUR PERSONAL AI</div><h1>SUKOON AI</h1><div class="subtitle">Tumhari baat sunne ke liye 💙</div></header>
 <main>
- <div class="orb"><span>✦</span></div>
+ <section class="face-stage" aria-label="Sukoon ka dots se banta animated chehra">
+  <div class="face-halo"></div>
+  <canvas id="sukoonFace" width="360" height="360" aria-label="Sukoon animated dot face"></canvas>
+  <div class="face-caption">MADE OF LIGHT</div>
+ </section>
  <div class="status" id="status">Haan jaanu, main taiyar hoon.</div>
- <div class="answer" id="answer">Mic dabao aur Hindi mein bolo, ya neeche likho.</div>
- <button class="mic" id="mic" aria-label="Microphone">🎙️</button>
- <div class="hint" id="hint">Pehli baar Android permission maang sakta hai.</div>
- <form class="chat" id="chat"><input id="typed" autocomplete="off" placeholder="Yahan apna sawaal likho…" aria-label="Sawaal"><button type="submit">Bhejo</button></form>
- <div class="note">Voice input Android speech recognition use karta hai. Pehle AI sawaal par Gemini API key maangi jayegi; key isi phone par save hogi, GitHub par nahi.</div>
+ <div class="answer" id="answer">Sukoon se baat shuru karo, ya apna kaam likh do.</div>
+ <button class="call-btn" id="callBtn" type="button"><span class="phone">☎</span><span>Sukoon se baat karo</span></button>
+ <button class="mic" id="mic" aria-label="Microphone" type="button">🎙️</button>
+ <div class="hint" id="hint">Baat shuru karne par microphone permission maangi ja sakti hai.</div>
+ <form class="chat" id="chat"><input id="typed" autocomplete="off" placeholder="Sawaal ya kaam likho…" aria-label="Sawaal ya kaam"><button type="submit">Bhejo</button></form>
+ <div class="quick-actions" aria-hidden="true"><span class="chip">✦ Samanya Gyan</span><span class="chip">⌘ Code & Apps</span><span class="chip">◌ Kaam ki yojana</span></div>
+ <div class="note">Dot-face animation har baar page khulne par banti hai. Voice input is device ki speech service par nirbhar hai. Background mein kaam aur doosre phone se remote control ke liye secure online service abhi alag se banani aur test karni hogi.</div>
 </main>
-<footer>S U K O O N &nbsp; A I &nbsp; • &nbsp; VOICE MODE</footer>
+<footer>S U K O O N &nbsp; • &nbsp; LISTEN · THINK · HELP</footer>
+<script>
+(function(){
+ const canvas=document.getElementById('sukoonFace'); if(!canvas)return;
+ const ctx=canvas.getContext('2d'); if(!ctx)return;
+ const W=360,H=360,CX=180,CY=170,particles=[];let targets=[];
+ function addLine(arr,x1,y1,x2,y2,n){for(let i=0;i<n;i++){const t=i/(n-1);arr.push({x:x1+(x2-x1)*t,y:y1+(y2-y1)*t});}}
+ function makeTargets(){
+  const p=[];
+  // Face outline: a softly rounded, human-like mask made from points.
+  for(let i=0;i<125;i++){const a=Math.PI*2*i/125;p.push({x:CX+91*Math.cos(a),y:CY+111*Math.sin(a)});}
+  // Inner cheek and forehead contours
+  for(let i=0;i<75;i++){const a=Math.PI*2*i/75;p.push({x:CX+73*Math.cos(a),y:CY+88*Math.sin(a)});}
+  // Eyes, brows, nose and a gentle smile
+  addLine(p,126,139,151,133,12);addLine(p,209,133,234,139,12);
+  for(let i=0;i<19;i++){const t=i/18;p.push({x:138+43*t,y:151-10*Math.sin(t*Math.PI)});p.push({x:222-43*t,y:151-10*Math.sin(t*Math.PI)});}
+  addLine(p,180,151,174,183,12);addLine(p,174,183,184,187,7);
+  for(let i=0;i<35;i++){const t=i/34;p.push({x:145+70*t,y:210-19*Math.sin(t*Math.PI)});}
+  // Decorative sparkles around the face
+  for(let i=0;i<34;i++){const a=i*2.399;const r=126+(i%4)*9;p.push({x:CX+Math.cos(a)*r,y:CY+Math.sin(a)*r});}
+  return p;
+ }
+ function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);const r=canvas.getBoundingClientRect();canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(canvas.width/360,0,0,canvas.height/360,0,0);}
+ function init(){targets=makeTargets();particles.length=0;for(let i=0;i<targets.length;i++){const t=targets[i];particles.push({x:Math.random()*W,y:Math.random()*H,tx:t.x,ty:t.y,phase:Math.random()*6.28,size:1.1+Math.random()*1.25});}}
+ let start=performance.now();
+ function draw(now){ctx.clearRect(0,0,W,H);const elapsed=now-start;const build=Math.min(1,elapsed/2300);const ease=1-Math.pow(1-build,3);
+  for(const p of particles){p.x+=(p.tx-p.x)*(.018+ease*.11);p.y+=(p.ty-p.y)*(.018+ease*.11);const twinkle=.65+.35*Math.sin(now*.002+p.phase);const alpha=(.36+.64*ease)*twinkle;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle='rgba('+(120+Math.floor(twinkle*70))+','+(200+Math.floor(twinkle*45))+',255,'+alpha+')';ctx.shadowBlur=4+twinkle*8;ctx.shadowColor='#4de5ff';ctx.fill();}
+  ctx.shadowBlur=0;
+  if(build<1) requestAnimationFrame(draw);else requestAnimationFrame(loop);
+ }
+ function loop(now){ctx.clearRect(0,0,W,H);for(const p of particles){const twinkle=.65+.35*Math.sin(now*.002+p.phase);p.x+=(p.tx-p.x)*.08;p.y+=(p.ty-p.y)*.08;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(.88+.12*twinkle),0,Math.PI*2);ctx.fillStyle='rgba(135,218,255,'+(.5+.5*twinkle)+')';ctx.shadowBlur=4+twinkle*9;ctx.shadowColor='#4de5ff';ctx.fill();}ctx.shadowBlur=0;requestAnimationFrame(loop);}
+ window.addEventListener('resize',resize);resize();init();requestAnimationFrame(draw);
+})();
+document.getElementById('callBtn')?.addEventListener('click',()=>document.getElementById('mic')?.click());
+</script>
 <script src="./bundle.js"></script>
 <script src="./web.js"></script>
 </body></html>
