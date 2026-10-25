@@ -132,7 +132,7 @@ export function initFeatures() {
   const unlockForm = document.getElementById("unlockForm");
   const unlockPin = document.getElementById("unlockPin");
   const alertList = document.getElementById("securityAlerts");
-  let armed = false;
+  let armed = Boolean(localStorage.getItem(PIN_KEY));
   let attempts = 0;
 
   function renderAlerts() {
@@ -199,4 +199,5 @@ export function initFeatures() {
   if (securitySetup) securitySetup.hidden = true;
   if (lockScreen) lockScreen.hidden = true;
   renderAlerts();
+  if (armed) setArmed(true);
 }
