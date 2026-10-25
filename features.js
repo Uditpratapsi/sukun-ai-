@@ -103,7 +103,7 @@ export async function handleLocalCommand(question) {
   if (!/(yaad dil|remind|reminder|task add|add task|save task|kaam save|kaam yaad|काम याद|याद दिला)/i.test(lower) && !awayTask) return null;
   const dueAt = relativeDueFromText(q);
   if (awayTask && !dueAt) { /* A reminder without a time can still be saved. */ }
-  let title = q
+  let title = awayTask ? "Wapas aane par bataye gaye kaam ki sthiti check karna" : q
     .replace(/^(sukoon|sukoon ai|सुकून|हे सुकून)[,\s]*/i, "")
     .replace(/(mujhe|mujhko|please|yaad dila dena|yaad dilana|remind me|remind|reminder|in|after|mein|baad|ke baad|ek ghante|one hour|\d+\s*(?:hour|hours|ghante|ghanta|minute|minutes|min|घंटे|घंटा|मिनट)|to|ki|kar dena|कर देना|याद दिला देना|याद दिलाना)/gi, " ")
     .replace(/^[\s,:-]+|[\s,:-]+$/g, "").trim();
