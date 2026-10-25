@@ -30,7 +30,7 @@ function getApiKey() {
 
 function showSavedKeyState() {
   const saved = getApiKey();
-  keyStatus.textContent = saved ? "Gemini key is saved on this phone." : "AI jawab ke liye Gemini API key ek baar save karein.";
+  if (keyStatus) keyStatus.textContent = saved ? "Gemini key is saved on this phone." : "AI jawab ke liye Gemini API key ek baar save karein.";
   if (keyInput && saved) keyInput.placeholder = "Key saved — badalne ke liye nayi key paste karein";
 }
 
@@ -40,25 +40,29 @@ if (saveKeyButton && keyInput) {
     if (!value) {
       localStorage.removeItem(KEY_NAME);
       keyInput.value = "";
-      keyStatus.textContent = "Saved key is cleared.";
+      if (keyStatus) keyStatus.textContent = "Saved key is cleared.";
       return;
     }
     if (!value.startsWith("AIza")) {
-      keyStatus.textContent = "Key ka format sahi nahi lag raha. Google AI Studio wali Gemini API key paste karein.";
+      if (keyStatus) keyStatus.textContent = "Key ka format sahi nahi lag raha. Google AI Studio wali Gemini API key paste karein.";
       return;
     }
     localStorage.setItem(KEY_NAME, value);
     keyInput.value = "";
     showSavedKeyState();
-    keyStatus.textContent = "Key isi phone par save ho gayi. Ab sawaal poochho.";
+    if (keyStatus) keyStatus.textContent = "Key isi phone par save ho gayi. Ab sawaal poochho.";
   });
 }
 showSavedKeyState();
 
 async function askGemini(question) {
-  const apiKey = getApiKey();
+  let apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error("NO_API_KEY");
+    apiKey = (window.prompt("Sukoon AI ko jawab dene ke liye apni Gemini API key paste karein. Key isi phone par save hogi:") || "").trim();
+    if (!apiKey) throw new Error("NO_API_KEY");
+    if (!apiKey.startsWith("AIza")) throw new Error("BAD_API_KEY");
+    localStorage.setItem(KEY_NAME, apiKey);
+    showSavedKeyState();
   }
 
   const response = await fetch(
